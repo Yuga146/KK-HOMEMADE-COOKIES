@@ -9,7 +9,7 @@
 </head>
 <body id="body-bg" class="bg-amber-50 text-gray-800 transition-colors duration-300 min-h-screen">
 
-    <!-- Slim & Compact Header (Scrolls naturally, NOT fixed) -->
+    <!-- Slim & Compact Header -->
     <header id="header-container" class="bg-amber-700 bg-cover bg-center py-2 px-4 shadow-md z-40 flex flex-col items-center justify-center max-w-6xl mx-auto rounded-b-xl transition-all duration-300 text-center">
         
         <!-- Top Utility Bar: Admin & Cart Buttons -->
@@ -35,10 +35,10 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+    <!-- Main Content Area Grid Container -->
+    <main id="main-grid-container" class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 transition-all duration-300">
         
-        <!-- Product Catalog / Admin Area -->
+        <!-- Product Catalog & Admin Area -->
         <div id="main-content-area" class="md:col-span-2 transition-all duration-300">
             <!-- Admin Panel with Tabs -->
             <div id="admin-panel" class="hidden bg-white text-gray-800 p-6 rounded-xl shadow-md mb-6 border border-amber-300 space-y-6">
@@ -59,17 +59,17 @@
                     <div id="admin-product-list" class="space-y-3"></div>
                 </div>
 
-                <!-- TAB 2: Live Customer Orders -->
+                <!-- TAB 2: Live Customer Orders with Sorting Filter -->
                 <div id="admin-tab-orders" class="space-y-4 hidden">
-                    <div class="flex justify-between items-center flex-wrap gap-2">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div>
                             <h2 class="text-lg font-bold text-amber-900">📋 Live Customer Orders</h2>
                             <p class="text-xs text-amber-800">Syncs in real-time across your phone and laptop!</p>
                         </div>
                         <div>
-                            <select id="order-sort-select" onchange="changeOrderSort(this.value)" class="border p-1.5 rounded-lg text-xs font-semibold bg-gray-50 border-gray-300 text-gray-700 shadow-sm focus:outline-none">
-                                <option value="desc">🕒 Sort: Newest First (9-0)</option>
-                                <option value="asc">🕒 Sort: Oldest First (0-9)</option>
+                            <select id="order-sort-select" onchange="renderAdminOrders()" class="border p-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border-amber-300">
+                                <option value="newest" selected>🕒 Newest to Oldest (9-0)</option>
+                                <option value="oldest">🕒 Oldest to Newest (0-9)</option>
                             </select>
                         </div>
                     </div>
@@ -142,39 +142,40 @@
             </div>
         </div>
 
-        <!-- Checkout & Cart Sidebar (Explicitly hidden via JavaScript when admin is logged in) -->
-        <div id="cart-sidebar-container" class="transition-all duration-300">
-            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md h-fit sticky top-6">
-                <h2 class="text-xl font-bold mb-4 text-amber-900">Your Order</h2>
-                <div id="cart-items" class="divide-y divide-gray-200 max-h-60 overflow-y-auto mb-4">
-                    <p class="text-gray-500 text-sm">Your cart is empty.</p>
+        <!-- Checkout & Cart Sidebar -->
+        <div id="cart-sidebar" class="bg-white text-gray-800 p-6 rounded-xl shadow-md h-fit sticky top-6">
+            <!-- Customer Details First -->
+            <div class="mb-5 pb-4 border-b border-gray-200">
+                <h3 class="text-md font-bold text-amber-900 mb-2">👤 Your Details</h3>
+                <div class="space-y-2">
+                    <input type="text" id="cust-name" onchange="saveCustomerDetails()" placeholder="Your Full Name *" class="w-full p-2 border rounded-lg text-sm bg-amber-50/50">
+                    <input type="tel" id="cust-phone" onchange="saveCustomerDetails()" placeholder="Phone Number (e.g. 01128013453) *" class="w-full p-2 border rounded-lg text-sm bg-amber-50/50">
                 </div>
-                
-                <div class="border-t pt-4 mb-4">
-                    <div class="flex justify-between font-bold text-lg">
-                        <span>Total:</span>
-                        <span id="cart-total">RM 0.00</span>
-                    </div>
-                </div>
-
-                <!-- Customer Form -->
-                <div class="space-y-3 mb-4">
-                    <input type="text" id="cust-name" placeholder="Your Full Name" class="w-full p-2 border rounded-lg text-sm">
-                    <input type="tel" id="cust-phone" placeholder="Phone Number (e.g., 01128013453)" class="w-full p-2 border rounded-lg text-sm">
-                    <textarea id="cust-address" placeholder="Delivery Address" class="w-full p-2 border rounded-lg text-sm" rows="2"></textarea>
-                </div>
-
-                <button onclick="checkout()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-500 transition flex items-center justify-center gap-2">
-                    Checkout via WhatsApp 📱
-                </button>
             </div>
+
+            <!-- Order Cart Area -->
+            <h2 class="text-xl font-bold mb-3 text-amber-900">🛒 Your Order</h2>
+            <div id="cart-items" class="divide-y divide-gray-200 max-h-60 overflow-y-auto mb-4">
+                <p class="text-gray-500 text-sm">Your cart is empty.</p>
+            </div>
+            
+            <div class="border-t pt-4 mb-4">
+                <div class="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span id="cart-total">RM 0.00</span>
+                </div>
+            </div>
+
+            <button onclick="checkout()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-500 transition flex items-center justify-center gap-2 shadow-md">
+                Checkout via WhatsApp 📱
+            </button>
         </div>
     </main>
 
     <!-- Firebase SDKs & App Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, setDoc, doc, updateDoc, deleteDoc, onSnapshot, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, setDoc, doc, updateDoc, deleteDoc, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDgcBDdJaGkEBS1ihJASDAayNHWgrJ-UN8",
@@ -195,8 +196,6 @@
         let cart = [];
         let isAdminOpen = false;
         let currentSettings = {};
-        let ordersUnsubscribe = null;
-        let orderSortOrder = 'desc';
 
         const defaultProducts = [
             { id: "1", name: "Biskut Semperit", price: 25.00, stock: 15, image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400" },
@@ -205,13 +204,28 @@
             { id: "4", name: "Cornflakes Madu", price: 22.00, stock: 20, image: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400" }
         ];
 
-        function convertFileToBase64(file) {
+        // Restore saved customer info if available
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedName = sessionStorage.getItem('cust_name');
+            const savedPhone = sessionStorage.getItem('cust_phone');
+            if (savedName) document.getElementById('cust-name').value = savedName;
+            if (savedPhone) document.getElementById('cust-phone').value = savedPhone;
+        });
+
+        window.saveCustomerDetails = function() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            if (name) sessionStorage.setItem('cust_name', name);
+            if (phone) sessionStorage.setItem('cust_phone', phone);
+        };
+
+        function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = () => {
+                reader.onload = (event) => {
                     const img = new Image();
-                    img.src = reader.result;
+                    img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const MAX_WIDTH = 400;
@@ -237,9 +251,9 @@
                         ctx.drawImage(img, 0, 0, width, height);
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
-                    img.onerror = error => reject(error);
+                    img.onerror = (error) => reject(error);
                 };
-                reader.onerror = error => reject(error);
+                reader.onerror = (error) => reject(error);
             });
         }
 
@@ -351,7 +365,7 @@
             const logoFileInput = document.getElementById('setting-logo-file');
             if (logoFileInput.files && logoFileInput.files[0]) {
                 try {
-                    logoUrl = await convertFileToBase64(logoFileInput.files[0]);
+                    logoUrl = await compressImage(logoFileInput.files[0]);
                 } catch (err) {
                     alert("Error processing logo image.");
                     return;
@@ -361,7 +375,7 @@
             const headerFileInput = document.getElementById('setting-header-file');
             if (headerFileInput.files && headerFileInput.files[0]) {
                 try {
-                    headerImageUrl = await convertFileToBase64(headerFileInput.files[0]);
+                    headerImageUrl = await compressImage(headerFileInput.files[0]);
                 } catch (err) {
                     alert("Error processing header banner image.");
                     return;
@@ -378,7 +392,6 @@
             alert("Webpage settings & header updated successfully!");
         }
 
-        // Real-time products listener
         onSnapshot(collection(db, "products"), async (snapshot) => {
             if (snapshot.empty) {
                 for (let p of defaultProducts) {
@@ -391,58 +404,68 @@
             }
         });
 
-        // Function to listen for orders dynamically with sorting option
-        function subscribeToOrders(direction = 'desc') {
-            if (ordersUnsubscribe) {
-                ordersUnsubscribe();
-            }
-
-            const ordersQuery = query(collection(db, "orders"), orderBy("createdAt", direction));
-            ordersUnsubscribe = onSnapshot(ordersQuery, (snapshot) => {
-                orders = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                if (isAdminOpen) {
-                    renderAdminOrders();
-                }
-            }, (error) => {
-                // Fallback for orders without createdAt timestamp field
-                onSnapshot(collection(db, "orders"), (fallbackSnap) => {
-                    orders = fallbackSnap.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                    orders.sort((a, b) => {
-                        const dateA = new Date(a.date || 0).getTime();
-                        const dateB = new Date(b.date || 0).getTime();
-                        return direction === 'desc' ? dateB - dateA : dateA - dateB;
-                    });
-                    if (isAdminOpen) renderAdminOrders();
-                });
-            });
-        }
-
-        subscribeToOrders('desc');
-
-        window.changeOrderSort = function(direction) {
-            orderSortOrder = direction;
-            subscribeToOrders(direction);
-        }
+        onSnapshot(collection(db, "orders"), (snapshot) => {
+            orders = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+            if (isAdminOpen) renderAdminOrders();
+        });
 
         window.renderProducts = function() {
             const list = document.getElementById('product-list');
             list.innerHTML = '';
             products.forEach(p => {
+                const cartItem = cart.find(item => item.id === p.id);
+                const cartQty = cartItem ? cartItem.qty : 0;
+
                 list.innerHTML += `
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800">
                         <div>
                             <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3 bg-gray-100" onerror="this.src='https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400'">
                             <h3 class="font-bold text-lg text-gray-900">${p.name}</h3>
-                            <p class="text-amber-700 font-semibold">RM ${Number(p.price).toFixed(2)}</p>
                             <p class="text-xs text-gray-500 mt-1">Stock left: ${p.stock}</p>
                         </div>
-                        <button onclick="addToCart('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} 
-                            class="mt-4 w-full bg-amber-700 text-white py-2 rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:bg-gray-300">
-                            ${p.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
-                        </button>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                            <span class="bg-amber-100 text-amber-900 px-3 py-1.5 rounded-lg font-bold text-sm">RM ${Number(p.price).toFixed(2)}</span>
+                            <div class="flex items-center bg-gray-100 rounded-lg p-1 border border-gray-200">
+                                <button onclick="updateCartQty('${p.id}', -1)" ${p.stock <= 0 ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition">-</button>
+                                <span id="product-qty-${p.id}" class="w-8 text-center text-sm font-bold text-gray-800">${cartQty}</span>
+                                <button onclick="updateCartQty('${p.id}', 1)" ${p.stock <= 0 ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition">+</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
+        }
+
+        window.updateCartQty = function(productId, change) {
+            const product = products.find(p => p.id === productId);
+            let cartItem = cart.find(item => item.id === productId);
+            
+            let currentQty = cartItem ? cartItem.qty : 0;
+            let newQty = currentQty + change;
+
+            if (newQty < 0) return;
+
+            if (newQty > product.stock) {
+                alert("Not enough stock available!");
+                return;
+            }
+
+            if (newQty === 0) {
+                cart = cart.filter(item => item.id !== productId);
+            } else {
+                if (cartItem) {
+                    cartItem.qty = newQty;
+                } else {
+                    cart.push({ ...product, qty: newQty });
+                }
+            }
+
+            const qtySpan = document.getElementById(`product-qty-${productId}`);
+            if (qtySpan) {
+                qtySpan.innerText = newQty;
+            }
+
+            renderCart();
         }
 
         window.toggleAdmin = function() {
@@ -457,8 +480,9 @@
             isAdminOpen = !isAdminOpen;
             const panel = document.getElementById('admin-panel');
             const adminBtn = document.getElementById('admin-btn');
-            const cartSidebarContainer = document.getElementById('cart-sidebar-container');
+            const cartSidebar = document.getElementById('cart-sidebar');
             const mainContent = document.getElementById('main-content-area');
+            const mainGrid = document.getElementById('main-grid-container');
 
             if (isAdminOpen) {
                 panel.classList.remove('hidden');
@@ -469,20 +493,18 @@
                 adminBtn.innerText = "🚪 Logout";
                 adminBtn.className = "bg-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-red-800 transition text-white shadow-sm";
 
-                if (cartSidebarContainer) {
-                    cartSidebarContainer.style.setProperty('display', 'none', 'important');
-                }
+                cartSidebar.classList.add('hidden');
                 mainContent.className = "md:col-span-3 transition-all duration-300";
+                mainGrid.className = "max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-1 gap-6 mt-6 transition-all duration-300";
             } else {
                 panel.classList.add('hidden');
                 
                 adminBtn.innerText = "⚙️ Admin";
                 adminBtn.className = "bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm";
 
-                if (cartSidebarContainer) {
-                    cartSidebarContainer.style.removeProperty('display');
-                }
+                cartSidebar.classList.remove('hidden');
                 mainContent.className = "md:col-span-2 transition-all duration-300";
+                mainGrid.className = "max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 transition-all duration-300";
             }
         }
 
@@ -520,17 +542,29 @@
                 return;
             }
 
-            orders.forEach(o => {
-                let itemsSummary = o.items ? o.items.map(i => `${i.name} (${i.qty}x)`).join(', ') : '';
+            const sortOption = document.getElementById('order-sort-select') ? document.getElementById('order-sort-select').value : 'newest';
+            
+            let sortedOrders = [...orders].sort((a, b) => {
+                let timeA = a.timestamp ? Number(a.timestamp) : 1;
+                let timeB = b.timestamp ? Number(b.timestamp) : 1;
+
+                if (sortOption === 'oldest') {
+                    return timeA - timeB; // Oldest to Newest (0-9)
+                } else {
+                    return timeB - timeA; // Newest to Oldest (9-0)
+                }
+            });
+
+            sortedOrders.forEach(o => {
+                let itemsSummary = o.items.map(i => `${i.name} (${i.qty}x)`).join(', ');
                 orderList.innerHTML += `
                     <div class="bg-white p-3 rounded-lg shadow-sm border text-sm mb-2 space-y-1 text-gray-800">
                         <div class="flex justify-between font-bold text-amber-900">
-                            <span>${o.orderId || 'ORD'} - ${o.name} (${o.phone})</span>
+                            <span>${o.orderId} - ${o.name} (${o.phone})</span>
                             <span class="text-xs px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-semibold">${o.status}</span>
                         </div>
-                        <p class="text-xs text-gray-600">📍 <b>Address:</b> ${o.address}</p>
                         <p class="text-xs text-gray-600">🍪 <b>Items:</b> ${itemsSummary}</p>
-                        <p class="text-xs font-semibold text-amber-700">💰 Total: RM ${Number(o.total).toFixed(2)} | 🕒 ${o.date}</p>
+                        <p class="text-xs font-semibold text-amber-700">💰 Total: RM ${o.total.toFixed(2)} | 🕒 ${o.date}</p>
                         <div class="flex gap-2 pt-2 items-center justify-between border-t mt-1">
                             <select onchange="updateOrderStatus('${o.docId}', this.value)" class="border p-1 rounded text-xs bg-gray-50 font-medium">
                                 <option value="Pending Payment" ${o.status === 'Pending Payment' ? 'selected' : ''}>Pending Payment</option>
@@ -556,7 +590,7 @@
 
             if (fileInput.files && fileInput.files[0]) {
                 try {
-                    imageUrl = await convertFileToBase64(fileInput.files[0]);
+                    imageUrl = await compressImage(fileInput.files[0]);
                 } catch (err) {
                     alert("Error processing product image.");
                     return;
@@ -584,22 +618,6 @@
             const newProduct = { id: newId, name, price, stock, image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400" };
             
             await setDoc(doc(db, "products", newId), newProduct);
-        }
-
-        window.addToCart = function(productId) {
-            const product = products.find(p => p.id === productId);
-            const cartItem = cart.find(item => item.id === productId);
-
-            if (cartItem) {
-                if (cartItem.qty < product.stock) {
-                    cartItem.qty++;
-                } else {
-                    alert("Not enough stock available!");
-                }
-            } else {
-                cart.push({ ...product, qty: 1 });
-            }
-            renderCart();
         }
 
         window.renderCart = function() {
@@ -638,22 +656,25 @@
 
         window.removeFromCart = function(productId) {
             cart = cart.filter(item => item.id !== productId);
+            const qtySpan = document.getElementById(`product-qty-${productId}`);
+            if (qtySpan) {
+                qtySpan.innerText = '0';
+            }
             renderCart();
         }
 
-        // Checkout function pushes to Firebase with timestamp and triggers WhatsApp redirect
         window.checkout = async function() {
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
-            const address = document.getElementById('cust-address').value.trim();
 
-            if (!name || !phone || !address) {
-                alert("Please fill in your name, phone number, and delivery address!");
+            if (!name || !phone) {
+                alert("Please enter your Name and Phone Number first!");
+                document.getElementById('cust-name').focus();
                 return;
             }
 
             if (cart.length === 0) {
-                alert("Your cart is empty!");
+                alert("Your cart is empty! Please add items to your order first.");
                 return;
             }
 
@@ -661,22 +682,21 @@
             cart.forEach(item => total += item.price * item.qty);
 
             const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+            const nowTime = Date.now();
             const newOrder = {
                 orderId: orderId,
                 name: name,
                 phone: phone,
-                address: address,
                 items: [...cart],
                 total: total,
                 status: 'Pending Payment',
                 date: new Date().toLocaleString(),
-                createdAt: serverTimestamp()
+                timestamp: nowTime
             };
 
             let message = `🪔 *NEW DEEPAVALI ORDER (${orderId})* 🪔\n\n`;
             message += `*Name:* ${name}\n`;
-            message += `*Phone:* ${phone}\n`;
-            message += `*Address:* ${address}\n\n`;
+            message += `*Phone:* ${phone}\n\n`;
             message += `*Order Details:*\n`;
 
             cart.forEach(item => {
@@ -690,28 +710,19 @@
             const encodedMessage = encodeURIComponent(message);
             window.open(`https://wa.me/601128013453?text=${encodedMessage}`, '_blank');
 
-            try {
-                // Save order to Firestore so it immediately pops up in the Admin Order History tab
-                await addDoc(collection(db, "orders"), newOrder);
+            await addDoc(collection(db, "orders"), newOrder);
 
-                // Deduct stock levels in real-time
-                for (let item of cart) {
-                    const currentProd = products.find(p => p.id === item.id);
-                    if (currentProd) {
-                        const newStock = Math.max(0, currentProd.stock - item.qty);
-                        await updateDoc(doc(db, "products", item.id), { stock: newStock });
-                    }
+            for (let item of cart) {
+                const currentProd = products.find(p => p.id === item.id);
+                if (currentProd) {
+                    const newStock = Math.max(0, currentProd.stock - item.qty);
+                    await updateDoc(doc(db, "products", item.id), { stock: newStock });
                 }
-
-                cart = [];
-                renderCart();
-                document.getElementById('cust-name').value = '';
-                document.getElementById('cust-phone').value = '';
-                document.getElementById('cust-address').value = '';
-            } catch (err) {
-                console.error("Error saving order: ", err);
-                alert("Order placed via WhatsApp, but database sync had an issue.");
             }
+
+            cart = [];
+            renderProducts();
+            renderCart();
         }
 
         window.updateOrderStatus = async function(docId, status) {
