@@ -6,6 +6,67 @@
     <title id="page-title">Deepavali Cookie Store</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bronze: {
+                            800: '#3A271B',
+                            900: '#231810',
+                            950: '#1A110B',
+                        },
+                        gold: {
+                            100: '#FFF9E6',
+                            300: '#F7E7CE',
+                            400: '#E5C158',
+                            500: '#D4AF37',
+                            600: '#AA820A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Dark Theme Styles (Bronze & Champagne Gold) */
+        body.theme-bronze-dark {
+            background-color: #1A110B !important;
+            color: #F7E7CE !important;
+        }
+        body.theme-bronze-dark #customer-details-card,
+        body.theme-bronze-dark #admin-panel,
+        body.theme-bronze-dark #cart-sidebar,
+        body.theme-bronze-dark .product-card,
+        body.theme-bronze-dark .admin-item-card {
+            background-color: #231810 !important;
+            border-color: #AA820A !important;
+            color: #F7E7CE !important;
+        }
+        body.theme-bronze-dark input,
+        body.theme-bronze-dark select {
+            background-color: #3A271B !important;
+            color: #FFF9E6 !important;
+            border-color: #AA820A !important;
+        }
+        body.theme-bronze-dark .text-gray-900,
+        body.theme-bronze-dark .text-gray-800,
+        body.theme-bronze-dark .text-amber-900 {
+            color: #F7E7CE !important;
+        }
+        body.theme-bronze-dark .text-gray-500,
+        body.theme-bronze-dark .text-gray-600 {
+            color: #E5C158 !important;
+        }
+        body.theme-bronze-dark .bg-gray-100 {
+            background-color: #3A271B !important;
+        }
+        body.theme-bronze-dark .border-gray-100,
+        body.theme-bronze-dark .border-gray-200,
+        body.theme-bronze-dark .border-amber-100 {
+            border-color: #3A271B !important;
+        }
+    </style>
 </head>
 <body id="body-bg" class="bg-amber-50 text-gray-800 transition-colors duration-300 min-h-screen">
 
@@ -14,6 +75,10 @@
         <div class="w-full flex justify-between items-center max-w-5xl mb-1 px-2">
             <div></div>
             <div class="flex gap-2">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" id="theme-toggle-btn" class="bg-amber-900/80 hover:bg-amber-900 border border-gold-400/40 px-2.5 py-1 rounded-lg text-xs font-semibold transition text-gold-300 shadow-sm flex items-center gap-1">
+                    🌙 Dark
+                </button>
                 <button onclick="toggleAdmin()" id="admin-btn" class="bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm">
                     ⚙️ Admin
                 </button>
@@ -107,6 +172,7 @@
                             <label class="block text-xs font-semibold mb-1">Header Color:</label>
                             <select id="setting-headercolor" class="w-full border p-2 rounded bg-white">
                                 <option value="bg-amber-700">Warm Amber Gold</option>
+                                <option value="bg-bronze-900">Bronze & Champagne Gold</option>
                                 <option value="bg-red-950">Imperial Maroon</option>
                                 <option value="bg-emerald-950">Deep Emerald</option>
                                 <option value="bg-slate-900">Midnight Slate</option>
@@ -120,6 +186,7 @@
                             <label class="block text-xs font-semibold mb-1">Background Theme:</label>
                             <select id="setting-theme" class="w-full border p-2 rounded bg-white">
                                 <option value="bg-amber-50">Amber Gold</option>
+                                <option value="theme-bronze-dark">Bronze & Champagne Gold (Dark)</option>
                                 <option value="bg-red-950">Imperial Maroon</option>
                                 <option value="bg-emerald-950">Emerald Green</option>
                                 <option value="bg-slate-900">Dark Midnight</option>
@@ -129,6 +196,7 @@
                             <label class="block text-xs font-semibold mb-1">Text Color:</label>
                             <select id="setting-textcolor" class="w-full border p-2 rounded bg-white">
                                 <option value="text-gray-800">Dark Gray</option>
+                                <option value="text-gold-300">Champagne Gold</option>
                                 <option value="text-white">White</option>
                                 <option value="text-amber-200">Light Gold</option>
                             </select>
@@ -211,7 +279,36 @@
             if (localStorage.getItem('admin_logged_in') === 'true') {
                 openAdminPanel();
             }
+
+            // Apply locally saved theme toggle preference
+            if (localStorage.getItem('theme_preference') === 'dark') {
+                enableBronzeDarkTheme(true);
+            }
         });
+
+        // Theme Toggle Handler (Bronze & Champagne Gold Dark Theme)
+        window.toggleTheme = function() {
+            const isDark = document.body.classList.contains('theme-bronze-dark');
+            if (isDark) {
+                disableBronzeDarkTheme();
+            } else {
+                enableBronzeDarkTheme();
+            }
+        };
+
+        function enableBronzeDarkTheme(skipSave = false) {
+            document.body.classList.add('theme-bronze-dark');
+            const toggleBtn = document.getElementById('theme-toggle-btn');
+            if (toggleBtn) toggleBtn.innerHTML = '☀️ Light';
+            if (!skipSave) localStorage.setItem('theme_preference', 'dark');
+        }
+
+        function disableBronzeDarkTheme() {
+            document.body.classList.remove('theme-bronze-dark');
+            const toggleBtn = document.getElementById('theme-toggle-btn');
+            if (toggleBtn) toggleBtn.innerHTML = '🌙 Dark';
+            localStorage.setItem('theme_preference', 'light');
+        }
 
         window.saveCustomerDetails = function() {
             const name = document.getElementById('cust-name').value.trim();
@@ -410,7 +507,9 @@
                 headerContainer.style.backgroundImage = '';
             }
 
-            document.body.className = `${themeClass} ${textColorClass} transition-colors duration-300 min-h-screen`;
+            if (!localStorage.getItem('theme_preference')) {
+                document.body.className = `${themeClass} ${textColorClass} transition-colors duration-300 min-h-screen`;
+            }
             document.getElementById('catalog-heading').className = `text-2xl font-bold ${textColorClass}`;
 
             if (document.getElementById('setting-title')) {
@@ -495,7 +594,7 @@
                     : `<p class="text-xs text-gray-500 mt-1">Stock left: ${p.stock}</p>`;
 
                 list.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800 relative">
+                    <div class="product-card bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800 relative">
                         <div>
                             <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3 bg-gray-100 ${isSoldOut ? 'opacity-60 grayscale' : ''}" onerror="this.src='https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400'">
                             <h3 class="font-bold text-lg text-gray-900">${p.name}</h3>
@@ -560,12 +659,48 @@
             renderCart();
         }
 
+        window.renderCart = function() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            const countEl = document.getElementById('cart-count');
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">Your cart is empty.</p>';
+                totalEl.innerText = 'RM 0.00';
+                countEl.innerText = '0';
+                return;
+            }
+
+            let total = 0;
+            let totalItems = 0;
+            container.innerHTML = '';
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                totalItems += item.qty;
+
+                container.innerHTML += `
+                    <div class="py-2 flex justify-between items-center text-sm">
+                        <div>
+                            <p class="font-bold text-gray-800">${item.name}</p>
+                            <p class="text-xs text-gray-500">RM ${Number(item.price).toFixed(2)} x ${item.qty}</p>
+                        </div>
+                        <span class="font-bold text-amber-900">RM ${subtotal.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            totalEl.innerText = `RM ${total.toFixed(2)}`;
+            countEl.innerText = totalItems;
+        }
+
         window.renderAdminProducts = function() {
             const adminList = document.getElementById('admin-product-list');
             adminList.innerHTML = '';
             products.forEach(p => {
                 adminList.innerHTML += `
-                    <div class="bg-white p-3 rounded-lg shadow-sm border flex flex-col gap-2 text-sm text-gray-800">
+                    <div class="admin-item-card bg-white p-3 rounded-lg shadow-sm border flex flex-col gap-2 text-sm text-gray-800">
                         <div class="flex gap-2 items-center">
                             <input type="text" value="${p.name}" id="name-${p.id}" class="border p-1 rounded w-1/3">
                             <input type="number" value="${p.price}" id="price-${p.id}" class="border p-1 rounded w-20">
@@ -577,8 +712,8 @@
                                 <input type="file" id="file-${p.id}" accept="image/png, image/jpeg" class="text-xs w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800">
                             </div>
                             <div class="flex gap-2 w-full sm:w-auto justify-end">
-                                <button onclick="updateProduct('${p.id}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-blue-500">Save</button>
-                                <button onclick="deleteProduct('${p.id}')" class="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-500">Delete</button>
+                                <button onclick="saveProduct('${p.id}')" class="bg-amber-700 text-white px-3 py-1 rounded text-xs font-bold hover:bg-amber-600">Save</button>
+                                <button onclick="deleteProduct('${p.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-red-500">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -586,128 +721,79 @@
             });
         }
 
-        window.renderAdminOrders = function() {
-            const orderList = document.getElementById('admin-order-list');
-            orderList.innerHTML = '';
-            if (orders.length === 0) {
-                orderList.innerHTML = '<p class="text-sm text-gray-500 italic">No orders received yet.</p>';
-                return;
-            }
-
-            const sortOption = document.getElementById('order-sort-select') ? document.getElementById('order-sort-select').value : 'newest';
-            
-            let sortedOrders = [...orders].sort((a, b) => {
-                let timeA = a.timestamp ? Number(a.timestamp) : 1;
-                let timeB = b.timestamp ? Number(b.timestamp) : 1;
-                return sortOption === 'oldest' ? timeA - timeB : timeB - timeA;
-            });
-
-            sortedOrders.forEach(o => {
-                let itemsSummary = o.items.map(i => `${i.name} (${i.qty}x)`).join(', ');
-                orderList.innerHTML += `
-                    <div class="bg-white p-3 rounded-lg shadow-sm border text-sm mb-2 space-y-1 text-gray-800">
-                        <div class="flex justify-between font-bold text-amber-900">
-                            <span>${o.orderId} - ${o.name} (${o.phone})</span>
-                            <span class="text-xs px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-semibold">${o.status}</span>
-                        </div>
-                        <p class="text-xs text-gray-600">🍪 <b>Items:</b> ${itemsSummary}</p>
-                        <p class="text-xs font-semibold text-amber-700">💰 Total: RM ${o.total.toFixed(2)} | 🕒 ${o.date}</p>
-                        <div class="flex gap-2 pt-2 items-center justify-between border-t mt-1">
-                            <select onchange="updateOrderStatus('${o.docId}', this.value)" class="border p-1 rounded text-xs bg-gray-50 font-medium">
-                                <option value="Pending Payment" ${o.status === 'Pending Payment' ? 'selected' : ''}>Pending Payment</option>
-                                <option value="Paid & Preparing" ${o.status === 'Paid & Preparing' ? 'selected' : ''}>Paid & Preparing</option>
-                                <option value="Shipped / Completed" ${o.status === 'Shipped / Completed' ? 'selected' : ''}>Shipped / Completed</option>
-                                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                            </select>
-                            <button onclick="deleteOrder('${o.docId}')" class="text-red-500 hover:text-red-700 text-xs font-bold">Delete Record</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        window.updateProduct = async function(id) {
+        window.saveProduct = async function(id) {
             const name = document.getElementById(`name-${id}`).value;
             const price = parseFloat(document.getElementById(`price-${id}`).value);
             const stock = parseInt(document.getElementById(`stock-${id}`).value);
             const fileInput = document.getElementById(`file-${id}`);
 
-            let currentProduct = products.find(p => p.id === id);
-            let imageUrl = currentProduct.image;
+            let image = products.find(p => p.id === id).image;
 
             if (fileInput.files && fileInput.files[0]) {
                 try {
-                    imageUrl = await compressImage(fileInput.files[0]);
-                } catch (err) {
-                    alert("Error processing product image.");
+                    image = await compressImage(fileInput.files[0]);
+                } catch (e) {
+                    alert("Image failed to process.");
                     return;
                 }
             }
 
-            await updateDoc(doc(db, "products", id), { name, price, stock, image: imageUrl });
-            fileInput.value = ""; 
+            await updateDoc(doc(db, "products", id), { name, price, stock, image });
             alert("Product updated!");
         }
 
         window.deleteProduct = async function(id) {
-            if (confirm("Are you sure you want to delete this cookie?")) {
+            if (confirm("Delete this product?")) {
                 await deleteDoc(doc(db, "products", id));
             }
         }
 
         window.addNewProductPrompt = async function() {
-            const name = prompt("Cookie Name:");
+            const name = prompt("Enter Cookie Name:");
             if (!name) return;
-            const price = parseFloat(prompt("Price (RM):", "25.00")) || 25.00;
-            const stock = parseInt(prompt("Stock Quantity:", "10")) || 10;
+            const price = parseFloat(prompt("Enter Price (RM):", "25.00"));
+            if (isNaN(price)) return;
+            const stock = parseInt(prompt("Enter Initial Stock Quantity:", "10"));
+            if (isNaN(stock)) return;
 
-            const newId = Date.now().toString();
-            const newProduct = { id: newId, name, price, stock, image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400" };
-            
-            await setDoc(doc(db, "products", newId), newProduct);
+            const newDocRef = doc(collection(db, "products"));
+            await setDoc(newDocRef, {
+                name,
+                price,
+                stock,
+                image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400"
+            });
         }
 
-        window.renderCart = function() {
-            const container = document.getElementById('cart-items');
-            const countEl = document.getElementById('cart-count');
-            const totalEl = document.getElementById('cart-total');
+        window.renderAdminOrders = function() {
+            const container = document.getElementById('admin-order-list');
+            const sortOrder = document.getElementById('order-sort-select').value;
             
-            container.innerHTML = '';
-            if (cart.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm">Your cart is empty.</p>';
-                countEl.innerText = '0';
-                totalEl.innerText = 'RM 0.00';
+            if (orders.length === 0) {
+                container.innerHTML = '<p class="text-xs text-gray-500">No customer orders recorded yet.</p>';
                 return;
             }
 
-            let total = 0;
-            let totalCount = 0;
+            let sorted = [...orders].sort((a, b) => {
+                const dateA = new Date(a.timestamp || 0);
+                const dateB = new Date(b.timestamp || 0);
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+            });
 
-            cart.forEach(item => {
-                total += item.price * item.qty;
-                totalCount += item.qty;
+            container.innerHTML = '';
+            sorted.forEach(order => {
+                const itemsList = (order.items || []).map(i => `${i.name} (x${i.qty})`).join(', ');
                 container.innerHTML += `
-                    <div class="py-2 flex justify-between items-center text-sm">
-                        <div>
-                            <p class="font-semibold">${item.name}</p>
-                            <p class="text-gray-500">RM ${Number(item.price).toFixed(2)} x ${item.qty}</p>
+                    <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-200 text-xs flex flex-col gap-1">
+                        <div class="flex justify-between items-center font-bold text-amber-900">
+                            <span>👤 ${order.customerName || 'Anonymous'} (${order.phone || 'N/A'})</span>
+                            <span>RM ${Number(order.total || 0).toFixed(2)}</span>
                         </div>
-                        <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold">Remove</button>
+                        <div class="text-gray-700">🛒 ${itemsList}</div>
+                        <div class="text-[10px] text-gray-400 mt-1">${order.timestamp ? new Date(order.timestamp).toLocaleString() : ''}</div>
                     </div>
                 `;
             });
-
-            countEl.innerText = totalCount;
-            totalEl.innerText = `RM ${total.toFixed(2)}`;
-        }
-
-        window.removeFromCart = function(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            const qtySpan = document.getElementById(`product-qty-${productId}`);
-            if (qtySpan) {
-                qtySpan.innerText = '0';
-            }
-            renderCart();
         }
 
         window.checkout = async function() {
@@ -715,70 +801,51 @@
             const phone = document.getElementById('cust-phone').value.trim();
 
             if (!name || !phone) {
-                alert("Please enter your Name and Phone Number first!");
-                document.getElementById('cust-name').focus();
+                alert("Please fill in your Name and Phone Number first!");
                 return;
             }
 
             if (cart.length === 0) {
-                alert("Your cart is empty! Please add items to your order first.");
+                alert("Your cart is empty!");
                 return;
             }
 
             let total = 0;
-            cart.forEach(item => total += item.price * item.qty);
-
-            const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
-            const nowTime = Date.now();
-            const newOrder = {
-                orderId: orderId,
-                name: name,
-                phone: phone,
-                items: [...cart],
-                total: total,
-                status: 'Pending Payment',
-                date: new Date().toLocaleString(),
-                timestamp: nowTime
-            };
-
-            let message = `🪔 *NEW DEEPAVALI ORDER (${orderId})* 🪔\n\n`;
-            message += `*Name:* ${name}\n`;
-            message += `*Phone:* ${phone}\n\n`;
-            message += `*Order Details:*\n`;
+            let orderSummary = `*New Order - Deepavali Cookie Store*\n`;
+            orderSummary += `👤 Name: ${name}\n📱 Phone: ${phone}\n------------------------------\n`;
 
             cart.forEach(item => {
-                let subtotal = item.price * item.qty;
-                message += `- ${item.name} (${item.qty}x) = RM ${subtotal.toFixed(2)}\n`;
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                orderSummary += `• ${item.name} x ${item.qty} = RM ${subtotal.toFixed(2)}\n`;
             });
 
-            message += `\n*Total Amount:* RM ${total.toFixed(2)}\n\n`;
-            message += `Please send me the payment instructions!`;
+            orderSummary += `------------------------------\n💰 *Total Amount: RM ${total.toFixed(2)}*`;
 
-            const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/601128013453?text=${encodedMessage}`, '_blank');
+            try {
+                await addDoc(collection(db, "orders"), {
+                    customerName: name,
+                    phone: phone,
+                    items: cart,
+                    total: total,
+                    timestamp: new Date().toISOString()
+                });
 
-            await addDoc(collection(db, "orders"), newOrder);
-
-            for (let item of cart) {
-                const currentProd = products.find(p => p.id === item.id);
-                if (currentProd) {
-                    const newStock = Math.max(0, currentProd.stock - item.qty);
-                    await updateDoc(doc(db, "products", item.id), { stock: newStock });
+                for (let cartItem of cart) {
+                    const prod = products.find(p => p.id === cartItem.id);
+                    if (prod) {
+                        const newStock = Math.max(0, prod.stock - cartItem.qty);
+                        await updateDoc(doc(db, "products", cartItem.id), { stock: newStock });
+                    }
                 }
-            }
 
-            cart = [];
-            renderProducts();
-            renderCart();
-        }
+                cart = [];
+                renderCart();
 
-        window.updateOrderStatus = async function(docId, status) {
-            await updateDoc(doc(db, "orders", docId), { status: status });
-        }
-
-        window.deleteOrder = async function(docId) {
-            if (confirm("Are you sure you want to delete this order record?")) {
-                await deleteDoc(doc(db, "orders", docId));
+                const encodedMsg = encodeURIComponent(orderSummary);
+                window.open(`https://wa.me/601128013453?text=${encodedMsg}`, '_blank');
+            } catch (err) {
+                alert("An error occurred while submitting your order. Please try again.");
             }
         }
     </script>
