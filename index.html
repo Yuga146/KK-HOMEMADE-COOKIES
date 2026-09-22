@@ -208,7 +208,6 @@
             if (savedPhone) document.getElementById('cust-phone').value = savedPhone;
             checkDetailsRequirement();
 
-            // Auto log back into Admin if previously logged in
             if (localStorage.getItem('admin_logged_in') === 'true') {
                 openAdminPanel();
             }
@@ -489,20 +488,25 @@
             products.forEach(p => {
                 const cartItem = cart.find(item => item.id === p.id);
                 const cartQty = cartItem ? cartItem.qty : 0;
+                const isSoldOut = p.stock <= 0;
+
+                const stockBadge = isSoldOut 
+                    ? `<span class="inline-block bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-bold mt-1">🔴 Sold Out</span>`
+                    : `<p class="text-xs text-gray-500 mt-1">Stock left: ${p.stock}</p>`;
 
                 list.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800 relative">
                         <div>
-                            <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3 bg-gray-100" onerror="this.src='https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400'">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3 bg-gray-100 ${isSoldOut ? 'opacity-60 grayscale' : ''}" onerror="this.src='https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400'">
                             <h3 class="font-bold text-lg text-gray-900">${p.name}</h3>
-                            <p class="text-xs text-gray-500 mt-1">Stock left: ${p.stock}</p>
+                            ${stockBadge}
                         </div>
                         <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
                             <span class="bg-amber-100 text-amber-900 px-3 py-1.5 rounded-lg font-bold text-sm">RM ${Number(p.price).toFixed(2)}</span>
                             <div class="flex items-center bg-gray-100 rounded-lg p-1 border border-gray-200">
-                                <button onclick="updateCartQty('${p.id}', -1)" ${p.stock <= 0 ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition">-</button>
+                                <button onclick="updateCartQty('${p.id}', -1)" ${isSoldOut ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition disabled:opacity-30 disabled:cursor-not-allowed">-</button>
                                 <span id="product-qty-${p.id}" class="w-8 text-center text-sm font-bold text-gray-800">${cartQty}</span>
-                                <button onclick="updateCartQty('${p.id}', 1)" ${p.stock <= 0 ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition">+</button>
+                                <button onclick="updateCartQty('${p.id}', 1)" ${isSoldOut ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition disabled:opacity-30 disabled:cursor-not-allowed">+</button>
                             </div>
                         </div>
                     </div>
@@ -521,8 +525,13 @@
             }
 
             const product = products.find(p => p.id === productId);
+
+            if (product.stock <= 0) {
+                alert("Sorry, this item is sold out!");
+                return;
+            }
+
             let cartItem = cart.find(item => item.id === productId);
-            
             let currentQty = cartItem ? cartItem.qty : 0;
             let newQty = currentQty + change;
 
