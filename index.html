@@ -11,17 +11,20 @@
             theme: {
                 extend: {
                     colors: {
-                        bronze: {
-                            800: '#3A271B',
-                            900: '#231810',
-                            950: '#1A110B',
+                        blackgold: {
+                            950: '#0B0B0B',
+                            900: '#121212',
+                            800: '#1C1C1C',
+                            700: '#2A2A2A',
                         },
-                        gold: {
-                            100: '#FFF9E6',
-                            300: '#F7E7CE',
-                            400: '#E5C158',
+                        luxgold: {
+                            100: '#FFFDF0',
+                            200: '#F9F1E0',
+                            300: '#FFE58F',
+                            400: '#E6CA65',
                             500: '#D4AF37',
                             600: '#AA820A',
+                            700: '#856404',
                         }
                     }
                 }
@@ -29,42 +32,51 @@
         }
     </script>
     <style>
-        /* Custom Dark Theme Styles (Bronze & Champagne Gold) */
-        body.theme-bronze-dark {
-            background-color: #1A110B !important;
-            color: #F7E7CE !important;
+        /* Custom Elegant Black & Gold Theme */
+        body.theme-black-gold {
+            background-color: #0B0B0B !important;
+            color: #F9F1E0 !important;
         }
-        body.theme-bronze-dark #customer-details-card,
-        body.theme-bronze-dark #admin-panel,
-        body.theme-bronze-dark #cart-sidebar,
-        body.theme-bronze-dark .product-card,
-        body.theme-bronze-dark .admin-item-card {
-            background-color: #231810 !important;
-            border-color: #AA820A !important;
-            color: #F7E7CE !important;
+        body.theme-black-gold #customer-details-card,
+        body.theme-black-gold #admin-panel,
+        body.theme-black-gold #cart-sidebar,
+        body.theme-black-gold .product-card,
+        body.theme-black-gold .admin-item-card {
+            background-color: #121212 !important;
+            border-color: #D4AF37 !important;
+            color: #F9F1E0 !important;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.08);
         }
-        body.theme-bronze-dark input,
-        body.theme-bronze-dark select {
-            background-color: #3A271B !important;
-            color: #FFF9E6 !important;
-            border-color: #AA820A !important;
+        body.theme-black-gold input,
+        body.theme-black-gold select {
+            background-color: #1C1C1C !important;
+            color: #FFFDF0 !important;
+            border-color: #D4AF37 !important;
         }
-        body.theme-bronze-dark .text-gray-900,
-        body.theme-bronze-dark .text-gray-800,
-        body.theme-bronze-dark .text-amber-900 {
-            color: #F7E7CE !important;
+        body.theme-black-gold .text-gray-900,
+        body.theme-black-gold .text-gray-800,
+        body.theme-black-gold .text-amber-900 {
+            color: #FFE58F !important;
         }
-        body.theme-bronze-dark .text-gray-500,
-        body.theme-bronze-dark .text-gray-600 {
-            color: #E5C158 !important;
+        body.theme-black-gold .text-gray-500,
+        body.theme-black-gold .text-gray-600 {
+            color: #E6CA65 !important;
         }
-        body.theme-bronze-dark .bg-gray-100 {
-            background-color: #3A271B !important;
+        body.theme-black-gold .bg-gray-100 {
+            background-color: #2A2A2A !important;
         }
-        body.theme-bronze-dark .border-gray-100,
-        body.theme-bronze-dark .border-gray-200,
-        body.theme-bronze-dark .border-amber-100 {
-            border-color: #3A271B !important;
+        body.theme-black-gold .border-gray-100,
+        body.theme-black-gold .border-gray-200,
+        body.theme-black-gold .border-amber-100 {
+            border-color: #2A2A2A !important;
+        }
+        body.theme-black-gold .bg-amber-100 {
+            background-color: #2A2A2A !important;
+            color: #FFE58F !important;
+            border: 1px solid #D4AF37;
+        }
+        body.theme-black-gold #header-container {
+            border-bottom: 2px solid #D4AF37;
         }
     </style>
 </head>
@@ -75,9 +87,9 @@
         <div class="w-full flex justify-between items-center max-w-5xl mb-1 px-2">
             <div></div>
             <div class="flex gap-2">
-                <!-- Theme Toggle Button -->
-                <button onclick="toggleTheme()" id="theme-toggle-btn" class="bg-amber-900/80 hover:bg-amber-900 border border-gold-400/40 px-2.5 py-1 rounded-lg text-xs font-semibold transition text-gold-300 shadow-sm flex items-center gap-1">
-                    🌙 Dark
+                <!-- Black & Gold Theme Toggle Button -->
+                <button onclick="toggleTheme()" id="theme-toggle-btn" class="bg-black/70 hover:bg-black border border-luxgold-500 px-2.5 py-1 rounded-lg text-xs font-semibold transition text-luxgold-300 shadow-sm flex items-center gap-1">
+                    ✨ Gold Theme
                 </button>
                 <button onclick="toggleAdmin()" id="admin-btn" class="bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm">
                     ⚙️ Admin
@@ -89,7 +101,7 @@
         </div>
 
         <div class="flex flex-col items-center space-y-0.5">
-            <img id="header-logo" src="" alt="Logo" class="w-10 h-10 object-cover rounded-full border-2 border-white/80 shadow-sm hidden">
+            <img id="header-logo" src="" alt="Logo" class="w-10 h-10 object-cover rounded-full border-2 border-luxgold-500 shadow-sm hidden">
             <div>
                 <h1 id="header-title" class="text-lg font-bold tracking-wide text-white">🪔 Deepavali Cookie Store</h1>
                 <p id="header-subtitle" class="text-[11px] text-amber-200 opacity-90 hidden">Delicious Festive Treats</p>
@@ -172,7 +184,7 @@
                             <label class="block text-xs font-semibold mb-1">Header Color:</label>
                             <select id="setting-headercolor" class="w-full border p-2 rounded bg-white">
                                 <option value="bg-amber-700">Warm Amber Gold</option>
-                                <option value="bg-bronze-900">Bronze & Champagne Gold</option>
+                                <option value="bg-blackgold-950">Elegant Black & Gold</option>
                                 <option value="bg-red-950">Imperial Maroon</option>
                                 <option value="bg-emerald-950">Deep Emerald</option>
                                 <option value="bg-slate-900">Midnight Slate</option>
@@ -186,7 +198,7 @@
                             <label class="block text-xs font-semibold mb-1">Background Theme:</label>
                             <select id="setting-theme" class="w-full border p-2 rounded bg-white">
                                 <option value="bg-amber-50">Amber Gold</option>
-                                <option value="theme-bronze-dark">Bronze & Champagne Gold (Dark)</option>
+                                <option value="theme-black-gold">Black & Pure Gold (Dark Elegant)</option>
                                 <option value="bg-red-950">Imperial Maroon</option>
                                 <option value="bg-emerald-950">Emerald Green</option>
                                 <option value="bg-slate-900">Dark Midnight</option>
@@ -196,7 +208,7 @@
                             <label class="block text-xs font-semibold mb-1">Text Color:</label>
                             <select id="setting-textcolor" class="w-full border p-2 rounded bg-white">
                                 <option value="text-gray-800">Dark Gray</option>
-                                <option value="text-gold-300">Champagne Gold</option>
+                                <option value="text-luxgold-300">Champagne Gold</option>
                                 <option value="text-white">White</option>
                                 <option value="text-amber-200">Light Gold</option>
                             </select>
@@ -281,32 +293,32 @@
             }
 
             // Apply locally saved theme toggle preference
-            if (localStorage.getItem('theme_preference') === 'dark') {
-                enableBronzeDarkTheme(true);
+            if (localStorage.getItem('theme_preference') === 'blackgold') {
+                enableBlackGoldTheme(true);
             }
         });
 
-        // Theme Toggle Handler (Bronze & Champagne Gold Dark Theme)
+        // Theme Toggle Handler (Black & Pure Gold)
         window.toggleTheme = function() {
-            const isDark = document.body.classList.contains('theme-bronze-dark');
+            const isDark = document.body.classList.contains('theme-black-gold');
             if (isDark) {
-                disableBronzeDarkTheme();
+                disableBlackGoldTheme();
             } else {
-                enableBronzeDarkTheme();
+                enableBlackGoldTheme();
             }
         };
 
-        function enableBronzeDarkTheme(skipSave = false) {
-            document.body.classList.add('theme-bronze-dark');
+        function enableBlackGoldTheme(skipSave = false) {
+            document.body.classList.add('theme-black-gold');
             const toggleBtn = document.getElementById('theme-toggle-btn');
             if (toggleBtn) toggleBtn.innerHTML = '☀️ Light';
-            if (!skipSave) localStorage.setItem('theme_preference', 'dark');
+            if (!skipSave) localStorage.setItem('theme_preference', 'blackgold');
         }
 
-        function disableBronzeDarkTheme() {
-            document.body.classList.remove('theme-bronze-dark');
+        function disableBlackGoldTheme() {
+            document.body.classList.remove('theme-black-gold');
             const toggleBtn = document.getElementById('theme-toggle-btn');
-            if (toggleBtn) toggleBtn.innerHTML = '🌙 Dark';
+            if (toggleBtn) toggleBtn.innerHTML = '✨ Gold Theme';
             localStorage.setItem('theme_preference', 'light');
         }
 
@@ -590,7 +602,7 @@
                 const isSoldOut = p.stock <= 0;
 
                 const stockBadge = isSoldOut 
-                    ? `<span class="inline-block bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-bold mt-1">🔴 Sold Out</span>`
+                    ? `<span class="inline-block bg-red-900/60 border border-red-500 text-red-300 px-2 py-0.5 rounded text-xs font-bold mt-1">🔴 Sold Out</span>`
                     : `<p class="text-xs text-gray-500 mt-1">Stock left: ${p.stock}</p>`;
 
                 list.innerHTML += `
