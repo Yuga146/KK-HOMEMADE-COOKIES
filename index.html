@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Deepavali Cookie Store</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body id="body-bg" class="bg-amber-50 text-gray-800 transition-colors duration-300 min-h-screen">
+
+    <!-- Slim & Compact Header (Scrolls naturally, NOT fixed) -->
+    <header id="header-container" class="bg-amber-700 bg-cover bg-center py-2 px-4 shadow-md z-40 flex flex-col items-center justify-center max-w-6xl mx-auto rounded-b-xl transition-all duration-300 text-center">
+        
+        <!-- Top Utility Bar: Admin & Cart Buttons -->
+        <div class="w-full flex justify-between items-center max-w-5xl mb-1 px-2">
+            <div></div> <!-- Spacer -->
+            <div class="flex gap-2">
+                <button onclick="toggleAdmin()" id="admin-btn" class="bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm">
+                    ⚙️ Admin
+                </button>
+                <button id="cart-toggle-btn" onclick="toggleCart()" class="bg-amber-600 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 hover:bg-amber-500 transition text-white shadow-sm">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- Center Stack: Slim Logo & Title -->
+        <div class="flex flex-col items-center space-y-0.5">
+            <img id="header-logo" src="" alt="Logo" class="w-10 h-10 object-cover rounded-full border-2 border-white/80 shadow-sm hidden">
+            <div>
+                <h1 id="header-title" class="text-lg font-bold tracking-wide text-white">🪔 Deepavali Cookie Store</h1>
+                <p id="header-subtitle" class="text-[11px] text-amber-200 opacity-90 hidden">Delicious Festive Treats</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        
+        <!-- Product Catalog / Admin Area -->
+        <div id="main-content-area" class="md:col-span-2 transition-all duration-300">
+            <!-- Admin Panel with Tabs -->
+            <div id="admin-panel" class="hidden bg-white text-gray-800 p-6 rounded-xl shadow-md mb-6 border border-amber-300 space-y-6">
+                
+                <!-- Admin Navigation Tabs -->
+                <div class="flex border-b border-gray-200 pb-3 gap-2 overflow-x-auto">
+                    <button onclick="switchAdminTab('inventory')" id="tab-btn-inventory" class="px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white shadow transition">📦 Stock & Inventory</button>
+                    <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">📋 Order History</button>
+                    <button onclick="switchAdminTab('appearance')" id="tab-btn-appearance" class="px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">🎨 Webpage Customization</button>
+                </div>
+
+                <!-- TAB 1: Inventory & Stock Management -->
+                <div id="admin-tab-inventory" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-lg font-bold text-amber-900">⚙️ Inventory & Stock Manager</h2>
+                        <button onclick="addNewProductPrompt()" class="bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-600">+ Add New Cookie</button>
+                    </div>
+                    <div id="admin-product-list" class="space-y-3"></div>
+                </div>
+
+                <!-- TAB 2: Live Customer Orders -->
+                <div id="admin-tab-orders" class="space-y-4 hidden">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                            <h2 class="text-lg font-bold text-amber-900">📋 Live Customer Orders</h2>
+                            <p class="text-xs text-amber-800">Syncs in real-time across your phone and laptop!</p>
+                        </div>
+                        <div>
+                            <select id="order-sort-select" onchange="changeOrderSort(this.value)" class="border p-1.5 rounded-lg text-xs font-semibold bg-gray-50 border-gray-300 text-gray-700 shadow-sm focus:outline-none">
+                                <option value="desc">🕒 Sort: Newest First (9-0)</option>
+                                <option value="asc">🕒 Sort: Oldest First (0-9)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="admin-order-list" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
+                </div>
+
+                <!-- TAB 3: Webpage & Header Appearance Customization -->
+                <div id="admin-tab-appearance" class="space-y-4 hidden">
+                    <h2 class="text-lg font-bold text-amber-900">🎨 Webpage & Appearance Customization</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-amber-50 p-4 rounded-xl border border-amber-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Store Title:</label>
+                            <input type="text" id="setting-title" class="w-full border p-2 rounded bg-white" placeholder="Store Title">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Subtitle / Description:</label>
+                            <input type="text" id="setting-subtitle" class="w-full border p-2 rounded bg-white" placeholder="Subtitle">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Upload Store Logo:</label>
+                            <input type="file" id="setting-logo-file" accept="image/png, image/jpeg" class="w-full border p-1 rounded text-xs bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Header Style Type:</label>
+                            <select id="setting-header-type" onchange="toggleHeaderTypeInputs()" class="w-full border p-2 rounded bg-white">
+                                <option value="solid">Solid Background Color</option>
+                                <option value="image">Upload Header Background Image</option>
+                            </select>
+                        </div>
+                        <div id="header-color-box">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Header Background Color:</label>
+                            <select id="setting-headercolor" class="w-full border p-2 rounded bg-white">
+                                <option value="bg-amber-700">Warm Amber Gold</option>
+                                <option value="bg-red-950">Imperial Maroon</option>
+                                <option value="bg-emerald-950">Deep Emerald</option>
+                                <option value="bg-slate-900">Midnight Slate</option>
+                                <option value="bg-zinc-900">Obsidian Black</option>
+                            </select>
+                        </div>
+                        <div id="header-image-box" class="hidden">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Upload Header Banner Image:</label>
+                            <input type="file" id="setting-header-file" accept="image/png, image/jpeg" class="w-full border p-1 rounded text-xs bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Background Theme Color:</label>
+                            <select id="setting-theme" class="w-full border p-2 rounded bg-white">
+                                <option value="bg-amber-50">Amber (Warm Gold)</option>
+                                <option value="bg-red-950">Imperial Maroon (Deepavali Special)</option>
+                                <option value="bg-emerald-950">Emerald Green</option>
+                                <option value="bg-slate-900">Dark Midnight</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Global Text Color:</label>
+                            <select id="setting-textcolor" class="w-full border p-2 rounded bg-white">
+                                <option value="text-gray-800">Dark Gray (Default)</option>
+                                <option value="text-white">White</option>
+                                <option value="text-amber-200">Light Gold</option>
+                                <option value="text-yellow-100">Soft Yellow</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="saveStoreSettings()" class="bg-amber-700 text-white px-4 py-2 rounded text-xs font-bold hover:bg-amber-600 shadow">Save Webpage Settings</button>
+                </div>
+            </div>
+
+            <h2 id="catalog-heading" class="text-2xl font-bold mb-4">Our Delicious Cookies</h2>
+            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Products injected via JS -->
+            </div>
+        </div>
+
+        <!-- Checkout & Cart Sidebar (Explicitly hidden via JavaScript when admin is logged in) -->
+        <div id="cart-sidebar-container" class="transition-all duration-300">
+            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md h-fit sticky top-6">
+                <h2 class="text-xl font-bold mb-4 text-amber-900">Your Order</h2>
+                <div id="cart-items" class="divide-y divide-gray-200 max-h-60 overflow-y-auto mb-4">
+                    <p class="text-gray-500 text-sm">Your cart is empty.</p>
+                </div>
+                
+                <div class="border-t pt-4 mb-4">
+                    <div class="flex justify-between font-bold text-lg">
+                        <span>Total:</span>
+                        <span id="cart-total">RM 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Customer Form -->
+                <div class="space-y-3 mb-4">
+                    <input type="text" id="cust-name" placeholder="Your Full Name" class="w-full p-2 border rounded-lg text-sm">
+                    <input type="tel" id="cust-phone" placeholder="Phone Number (e.g., 01128013453)" class="w-full p-2 border rounded-lg text-sm">
+                    <textarea id="cust-address" placeholder="Delivery Address" class="w-full p-2 border rounded-lg text-sm" rows="2"></textarea>
+                </div>
+
+                <button onclick="checkout()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-500 transition flex items-center justify-center gap-2">
+                    Checkout via WhatsApp 📱
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDKs & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, setDoc, doc, updateDoc, deleteDoc, onSnapshot, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgcBDdJaGkEBS1ihJASDAayNHWgrJ-UN8",
+            authDomain: "deepavalicookies2026.firebaseapp.com",
+            databaseURL: "https://deepavalicookies2026-default-rtdb.firebaseio.com/",
+            projectId: "deepavalicookies2026",
+            storageBucket: "deepavalicookies2026.firebasestorage.app",
+            messagingSenderId: "648876725443",
+            appId: "1:648876725443:web:beabca40332d99f90fbe76",
+            measurementId: "G-CH5L1EP9SK"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let products = [];
+        let orders = [];
+        let cart = [];
+        let isAdminOpen = false;
+        let currentSettings = {};
+        let ordersUnsubscribe = null;
+        let orderSortOrder = 'desc';
+
+        const defaultProducts = [
+            { id: "1", name: "Biskut Semperit", price: 25.00, stock: 15, image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400" },
+            { id: "2", name: "Nastar Pineapple Tart", price: 32.00, stock: 10, image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400" },
+            { id: "3", name: "Almond London", price: 30.00, stock: 8, image: "https://images.unsplash.com/photo-1548848221-0c2e68f3a6a3?w=400" },
+            { id: "4", name: "Cornflakes Madu", price: 22.00, stock: 20, image: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400" }
+        ];
+
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const img = new Image();
+                    img.src = reader.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;
+                        const MAX_HEIGHT = 400;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = error => reject(error);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        window.switchAdminTab = function(tabName) {
+            document.getElementById('admin-tab-inventory').classList.add('hidden');
+            document.getElementById('admin-tab-orders').classList.add('hidden');
+            document.getElementById('admin-tab-appearance').classList.add('hidden');
+
+            document.getElementById('tab-btn-inventory').className = "px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition";
+            document.getElementById('tab-btn-orders').className = "px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition";
+            document.getElementById('tab-btn-appearance').className = "px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition";
+
+            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tabName}`).className = "px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white shadow transition";
+        }
+
+        window.toggleHeaderTypeInputs = function() {
+            const type = document.getElementById('setting-header-type').value;
+            if (type === 'image') {
+                document.getElementById('header-color-box').classList.add('hidden');
+                document.getElementById('header-image-box').classList.remove('hidden');
+            } else {
+                document.getElementById('header-color-box').classList.remove('hidden');
+                document.getElementById('header-image-box').classList.add('hidden');
+            }
+        }
+
+        onSnapshot(doc(db, "settings", "store"), (docSnap) => {
+            if (docSnap.exists()) {
+                currentSettings = docSnap.data();
+                applySettings(currentSettings);
+            } else {
+                const defaultSet = {
+                    title: "🪔 Deepavali Cookie Store",
+                    subtitle: "Delicious Festive Treats",
+                    logo: "",
+                    headerType: "solid",
+                    headerColor: "bg-amber-700",
+                    headerImage: "",
+                    theme: "bg-amber-50",
+                    textColor: "text-gray-800"
+                };
+                setDoc(doc(db, "settings", "store"), defaultSet);
+            }
+        });
+
+        function applySettings(data) {
+            const titleText = data.title || "🪔 Deepavali Cookie Store";
+            const subText = data.subtitle || "";
+            const headerType = data.headerType || "solid";
+            const headerColorClass = data.headerColor || "bg-amber-700";
+            const headerImage = data.headerImage || "";
+            const themeClass = data.theme || "bg-amber-50";
+            const textColorClass = data.textColor || "text-gray-800";
+
+            document.getElementById('header-title').innerText = titleText;
+            document.getElementById('page-title').innerText = titleText;
+            
+            const subEl = document.getElementById('header-subtitle');
+            if (subText) {
+                subEl.innerText = subText;
+                subEl.classList.remove('hidden');
+            } else {
+                subEl.classList.add('hidden');
+            }
+
+            const logoEl = document.getElementById('header-logo');
+            if (data.logo) {
+                logoEl.src = data.logo;
+                logoEl.classList.remove('hidden');
+            } else {
+                logoEl.classList.add('hidden');
+            }
+
+            const headerContainer = document.getElementById('header-container');
+            if (headerType === 'image' && headerImage) {
+                headerContainer.className = `bg-cover bg-center py-2 px-4 shadow-md z-40 flex flex-col items-center justify-center max-w-6xl mx-auto rounded-b-xl transition-all duration-300 text-center`;
+                headerContainer.style.backgroundImage = `url('${headerImage}')`;
+            } else {
+                headerContainer.className = `${headerColorClass} bg-cover bg-center py-2 px-4 shadow-md z-40 flex flex-col items-center justify-center max-w-6xl mx-auto rounded-b-xl transition-all duration-300 text-center`;
+                headerContainer.style.backgroundImage = '';
+            }
+
+            document.body.className = `${themeClass} ${textColorClass} transition-colors duration-300 min-h-screen`;
+            document.getElementById('catalog-heading').className = `text-2xl font-bold mb-4 ${textColorClass}`;
+
+            if (document.getElementById('setting-title')) {
+                document.getElementById('setting-title').value = titleText;
+                document.getElementById('setting-subtitle').value = subText;
+                document.getElementById('setting-header-type').value = headerType;
+                document.getElementById('setting-headercolor').value = headerColorClass;
+                document.getElementById('setting-theme').value = themeClass;
+                document.getElementById('setting-textcolor').value = textColorClass;
+                toggleHeaderTypeInputs();
+            }
+        }
+
+        window.saveStoreSettings = async function() {
+            const title = document.getElementById('setting-title').value;
+            const subtitle = document.getElementById('setting-subtitle').value;
+            const headerType = document.getElementById('setting-header-type').value;
+            const headerColor = document.getElementById('setting-headercolor').value;
+            const theme = document.getElementById('setting-theme').value;
+            const textColor = document.getElementById('setting-textcolor').value;
+            
+            let logoUrl = currentSettings.logo || "";
+            let headerImageUrl = currentSettings.headerImage || "";
+
+            const logoFileInput = document.getElementById('setting-logo-file');
+            if (logoFileInput.files && logoFileInput.files[0]) {
+                try {
+                    logoUrl = await convertFileToBase64(logoFileInput.files[0]);
+                } catch (err) {
+                    alert("Error processing logo image.");
+                    return;
+                }
+            }
+
+            const headerFileInput = document.getElementById('setting-header-file');
+            if (headerFileInput.files && headerFileInput.files[0]) {
+                try {
+                    headerImageUrl = await convertFileToBase64(headerFileInput.files[0]);
+                } catch (err) {
+                    alert("Error processing header banner image.");
+                    return;
+                }
+            }
+
+            await setDoc(doc(db, "settings", "store"), { 
+                title, subtitle, logo: logoUrl, headerType, headerColor, headerImage: headerImageUrl, theme, textColor 
+            });
+
+            logoFileInput.value = "";
+            headerFileInput.value = "";
+
+            alert("Webpage settings & header updated successfully!");
+        }
+
+        // Real-time products listener
+        onSnapshot(collection(db, "products"), async (snapshot) => {
+            if (snapshot.empty) {
+                for (let p of defaultProducts) {
+                    await setDoc(doc(db, "products", p.id), p);
+                }
+            } else {
+                products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderProducts();
+                if (isAdminOpen) renderAdminProducts();
+            }
+        });
+
+        // Function to listen for orders dynamically with sorting option
+        function subscribeToOrders(direction = 'desc') {
+            if (ordersUnsubscribe) {
+                ordersUnsubscribe();
+            }
+
+            const ordersQuery = query(collection(db, "orders"), orderBy("createdAt", direction));
+            ordersUnsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+                orders = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+                if (isAdminOpen) {
+                    renderAdminOrders();
+                }
+            }, (error) => {
+                // Fallback for orders without createdAt timestamp field
+                onSnapshot(collection(db, "orders"), (fallbackSnap) => {
+                    orders = fallbackSnap.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+                    orders.sort((a, b) => {
+                        const dateA = new Date(a.date || 0).getTime();
+                        const dateB = new Date(b.date || 0).getTime();
+                        return direction === 'desc' ? dateB - dateA : dateA - dateB;
+                    });
+                    if (isAdminOpen) renderAdminOrders();
+                });
+            });
+        }
+
+        subscribeToOrders('desc');
+
+        window.changeOrderSort = function(direction) {
+            orderSortOrder = direction;
+            subscribeToOrders(direction);
+        }
+
+        window.renderProducts = function() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+            products.forEach(p => {
+                list.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800">
+                        <div>
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3 bg-gray-100" onerror="this.src='https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400'">
+                            <h3 class="font-bold text-lg text-gray-900">${p.name}</h3>
+                            <p class="text-amber-700 font-semibold">RM ${Number(p.price).toFixed(2)}</p>
+                            <p class="text-xs text-gray-500 mt-1">Stock left: ${p.stock}</p>
+                        </div>
+                        <button onclick="addToCart('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} 
+                            class="mt-4 w-full bg-amber-700 text-white py-2 rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:bg-gray-300">
+                            ${p.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        window.toggleAdmin = function() {
+            if (!isAdminOpen) {
+                const pin = prompt("Enter Admin PIN:");
+                if (pin !== "1234") {
+                    if (pin !== null) alert("Incorrect PIN!");
+                    return;
+                }
+            }
+
+            isAdminOpen = !isAdminOpen;
+            const panel = document.getElementById('admin-panel');
+            const adminBtn = document.getElementById('admin-btn');
+            const cartSidebarContainer = document.getElementById('cart-sidebar-container');
+            const mainContent = document.getElementById('main-content-area');
+
+            if (isAdminOpen) {
+                panel.classList.remove('hidden');
+                switchAdminTab('inventory');
+                renderAdminProducts();
+                renderAdminOrders();
+                
+                adminBtn.innerText = "🚪 Logout";
+                adminBtn.className = "bg-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-red-800 transition text-white shadow-sm";
+
+                if (cartSidebarContainer) {
+                    cartSidebarContainer.style.setProperty('display', 'none', 'important');
+                }
+                mainContent.className = "md:col-span-3 transition-all duration-300";
+            } else {
+                panel.classList.add('hidden');
+                
+                adminBtn.innerText = "⚙️ Admin";
+                adminBtn.className = "bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm";
+
+                if (cartSidebarContainer) {
+                    cartSidebarContainer.style.removeProperty('display');
+                }
+                mainContent.className = "md:col-span-2 transition-all duration-300";
+            }
+        }
+
+        window.renderAdminProducts = function() {
+            const adminList = document.getElementById('admin-product-list');
+            adminList.innerHTML = '';
+            products.forEach(p => {
+                adminList.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg shadow-sm border flex flex-col gap-2 text-sm text-gray-800">
+                        <div class="flex gap-2 items-center">
+                            <input type="text" value="${p.name}" id="name-${p.id}" class="border p-1 rounded w-1/3">
+                            <input type="number" value="${p.price}" id="price-${p.id}" class="border p-1 rounded w-20">
+                            <input type="number" value="${p.stock}" id="stock-${p.id}" class="border p-1 rounded w-20">
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 items-center justify-between">
+                            <div class="flex items-center gap-2 w-full">
+                                <span class="text-xs text-gray-500">Photo:</span>
+                                <input type="file" id="file-${p.id}" accept="image/png, image/jpeg" class="text-xs w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                            </div>
+                            <div class="flex gap-2 w-full sm:w-auto justify-end">
+                                <button onclick="updateProduct('${p.id}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-blue-500">Save</button>
+                                <button onclick="deleteProduct('${p.id}')" class="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-500">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.renderAdminOrders = function() {
+            const orderList = document.getElementById('admin-order-list');
+            orderList.innerHTML = '';
+            if (orders.length === 0) {
+                orderList.innerHTML = '<p class="text-sm text-gray-500 italic">No orders received yet.</p>';
+                return;
+            }
+
+            orders.forEach(o => {
+                let itemsSummary = o.items ? o.items.map(i => `${i.name} (${i.qty}x)`).join(', ') : '';
+                orderList.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg shadow-sm border text-sm mb-2 space-y-1 text-gray-800">
+                        <div class="flex justify-between font-bold text-amber-900">
+                            <span>${o.orderId || 'ORD'} - ${o.name} (${o.phone})</span>
+                            <span class="text-xs px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-semibold">${o.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-600">📍 <b>Address:</b> ${o.address}</p>
+                        <p class="text-xs text-gray-600">🍪 <b>Items:</b> ${itemsSummary}</p>
+                        <p class="text-xs font-semibold text-amber-700">💰 Total: RM ${Number(o.total).toFixed(2)} | 🕒 ${o.date}</p>
+                        <div class="flex gap-2 pt-2 items-center justify-between border-t mt-1">
+                            <select onchange="updateOrderStatus('${o.docId}', this.value)" class="border p-1 rounded text-xs bg-gray-50 font-medium">
+                                <option value="Pending Payment" ${o.status === 'Pending Payment' ? 'selected' : ''}>Pending Payment</option>
+                                <option value="Paid & Preparing" ${o.status === 'Paid & Preparing' ? 'selected' : ''}>Paid & Preparing</option>
+                                <option value="Shipped / Completed" ${o.status === 'Shipped / Completed' ? 'selected' : ''}>Shipped / Completed</option>
+                                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                            <button onclick="deleteOrder('${o.docId}')" class="text-red-500 hover:text-red-700 text-xs font-bold">Delete Record</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.updateProduct = async function(id) {
+            const name = document.getElementById(`name-${id}`).value;
+            const price = parseFloat(document.getElementById(`price-${id}`).value);
+            const stock = parseInt(document.getElementById(`stock-${id}`).value);
+            const fileInput = document.getElementById(`file-${id}`);
+
+            let currentProduct = products.find(p => p.id === id);
+            let imageUrl = currentProduct.image;
+
+            if (fileInput.files && fileInput.files[0]) {
+                try {
+                    imageUrl = await convertFileToBase64(fileInput.files[0]);
+                } catch (err) {
+                    alert("Error processing product image.");
+                    return;
+                }
+            }
+
+            await updateDoc(doc(db, "products", id), { name, price, stock, image: imageUrl });
+            fileInput.value = ""; 
+            alert("Product, stock & photo updated successfully!");
+        }
+
+        window.deleteProduct = async function(id) {
+            if (confirm("Are you sure you want to delete this cookie?")) {
+                await deleteDoc(doc(db, "products", id));
+            }
+        }
+
+        window.addNewProductPrompt = async function() {
+            const name = prompt("Cookie Name:");
+            if (!name) return;
+            const price = parseFloat(prompt("Price (RM):", "25.00")) || 25.00;
+            const stock = parseInt(prompt("Stock Quantity:", "10")) || 10;
+
+            const newId = Date.now().toString();
+            const newProduct = { id: newId, name, price, stock, image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400" };
+            
+            await setDoc(doc(db, "products", newId), newProduct);
+        }
+
+        window.addToCart = function(productId) {
+            const product = products.find(p => p.id === productId);
+            const cartItem = cart.find(item => item.id === productId);
+
+            if (cartItem) {
+                if (cartItem.qty < product.stock) {
+                    cartItem.qty++;
+                } else {
+                    alert("Not enough stock available!");
+                }
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            renderCart();
+        }
+
+        window.renderCart = function() {
+            const container = document.getElementById('cart-items');
+            const countEl = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total');
+            
+            container.innerHTML = '';
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">Your cart is empty.</p>';
+                countEl.innerText = '0';
+                totalEl.innerText = 'RM 0.00';
+                return;
+            }
+
+            let total = 0;
+            let totalCount = 0;
+
+            cart.forEach(item => {
+                total += item.price * item.qty;
+                totalCount += item.qty;
+                container.innerHTML += `
+                    <div class="py-2 flex justify-between items-center text-sm">
+                        <div>
+                            <p class="font-semibold">${item.name}</p>
+                            <p class="text-gray-500">RM ${Number(item.price).toFixed(2)} x ${item.qty}</p>
+                        </div>
+                        <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold">Remove</button>
+                    </div>
+                `;
+            });
+
+            countEl.innerText = totalCount;
+            totalEl.innerText = `RM ${total.toFixed(2)}`;
+        }
+
+        window.removeFromCart = function(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            renderCart();
+        }
+
+        // Checkout function pushes to Firebase with timestamp and triggers WhatsApp redirect
+        window.checkout = async function() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+
+            if (!name || !phone || !address) {
+                alert("Please fill in your name, phone number, and delivery address!");
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            let total = 0;
+            cart.forEach(item => total += item.price * item.qty);
+
+            const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+            const newOrder = {
+                orderId: orderId,
+                name: name,
+                phone: phone,
+                address: address,
+                items: [...cart],
+                total: total,
+                status: 'Pending Payment',
+                date: new Date().toLocaleString(),
+                createdAt: serverTimestamp()
+            };
+
+            let message = `🪔 *NEW DEEPAVALI ORDER (${orderId})* 🪔\n\n`;
+            message += `*Name:* ${name}\n`;
+            message += `*Phone:* ${phone}\n`;
+            message += `*Address:* ${address}\n\n`;
+            message += `*Order Details:*\n`;
+
+            cart.forEach(item => {
+                let subtotal = item.price * item.qty;
+                message += `- ${item.name} (${item.qty}x) = RM ${subtotal.toFixed(2)}\n`;
+            });
+
+            message += `\n*Total Amount:* RM ${total.toFixed(2)}\n\n`;
+            message += `Please send me the payment instructions!`;
+
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/601128013453?text=${encodedMessage}`, '_blank');
+
+            try {
+                // Save order to Firestore so it immediately pops up in the Admin Order History tab
+                await addDoc(collection(db, "orders"), newOrder);
+
+                // Deduct stock levels in real-time
+                for (let item of cart) {
+                    const currentProd = products.find(p => p.id === item.id);
+                    if (currentProd) {
+                        const newStock = Math.max(0, currentProd.stock - item.qty);
+                        await updateDoc(doc(db, "products", item.id), { stock: newStock });
+                    }
+                }
+
+                cart = [];
+                renderCart();
+                document.getElementById('cust-name').value = '';
+                document.getElementById('cust-phone').value = '';
+                document.getElementById('cust-address').value = '';
+            } catch (err) {
+                console.error("Error saving order: ", err);
+                alert("Order placed via WhatsApp, but database sync had an issue.");
+            }
+        }
+
+        window.updateOrderStatus = async function(docId, status) {
+            await updateDoc(doc(db, "orders", docId), { status: status });
+        }
+
+        window.deleteOrder = async function(docId) {
+            if (confirm("Are you sure you want to delete this order record?")) {
+                await deleteDoc(doc(db, "orders", docId));
+            }
+        }
+    </script>
+</body>
+</html>
