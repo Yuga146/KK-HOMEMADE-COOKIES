@@ -202,18 +202,23 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedName = sessionStorage.getItem('cust_name');
-            const savedPhone = sessionStorage.getItem('cust_phone');
+            const savedName = localStorage.getItem('cust_name');
+            const savedPhone = localStorage.getItem('cust_phone');
             if (savedName) document.getElementById('cust-name').value = savedName;
             if (savedPhone) document.getElementById('cust-phone').value = savedPhone;
             checkDetailsRequirement();
+
+            // Auto log back into Admin if previously logged in
+            if (localStorage.getItem('admin_logged_in') === 'true') {
+                openAdminPanel();
+            }
         });
 
         window.saveCustomerDetails = function() {
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
-            if (name) sessionStorage.setItem('cust_name', name);
-            if (phone) sessionStorage.setItem('cust_phone', phone);
+            if (name) localStorage.setItem('cust_name', name);
+            if (phone) localStorage.setItem('cust_phone', phone);
             checkDetailsRequirement();
         };
 
@@ -234,6 +239,57 @@
                 warning.innerText = "⚠️ Please fill in your name and phone number above to unlock cookie ordering.";
                 warning.className = "text-xs text-amber-700 mt-2 font-medium";
                 card.className = "w-full md:col-span-3 bg-white p-5 rounded-xl shadow-md border-2 border-amber-400";
+            }
+        }
+
+        function openAdminPanel() {
+            isAdminOpen = true;
+            localStorage.setItem('admin_logged_in', 'true');
+
+            const panel = document.getElementById('admin-panel');
+            const adminBtn = document.getElementById('admin-btn');
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const custCard = document.getElementById('customer-details-card');
+
+            panel.classList.remove('hidden');
+            switchAdminTab('inventory');
+            renderAdminProducts();
+            renderAdminOrders();
+            
+            adminBtn.innerText = "🚪 Logout";
+            adminBtn.className = "bg-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-red-800 transition text-white shadow-sm";
+
+            cartSidebar.classList.add('hidden');
+            custCard.classList.add('hidden');
+        }
+
+        function closeAdminPanel() {
+            isAdminOpen = false;
+            localStorage.removeItem('admin_logged_in');
+
+            const panel = document.getElementById('admin-panel');
+            const adminBtn = document.getElementById('admin-btn');
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const custCard = document.getElementById('customer-details-card');
+
+            panel.classList.add('hidden');
+            adminBtn.innerText = "⚙️ Admin";
+            adminBtn.className = "bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm";
+
+            cartSidebar.classList.remove('hidden');
+            custCard.classList.remove('hidden');
+        }
+
+        window.toggleAdmin = function() {
+            if (!isAdminOpen) {
+                const pin = prompt("Enter Admin PIN:");
+                if (pin !== "1234") {
+                    if (pin !== null) alert("Incorrect PIN!");
+                    return;
+                }
+                openAdminPanel();
+            } else {
+                closeAdminPanel();
             }
         }
 
@@ -493,43 +549,6 @@
             }
 
             renderCart();
-        }
-
-        window.toggleAdmin = function() {
-            if (!isAdminOpen) {
-                const pin = prompt("Enter Admin PIN:");
-                if (pin !== "1234") {
-                    if (pin !== null) alert("Incorrect PIN!");
-                    return;
-                }
-            }
-
-            isAdminOpen = !isAdminOpen;
-            const panel = document.getElementById('admin-panel');
-            const adminBtn = document.getElementById('admin-btn');
-            const cartSidebar = document.getElementById('cart-sidebar');
-            const custCard = document.getElementById('customer-details-card');
-
-            if (isAdminOpen) {
-                panel.classList.remove('hidden');
-                switchAdminTab('inventory');
-                renderAdminProducts();
-                renderAdminOrders();
-                
-                adminBtn.innerText = "🚪 Logout";
-                adminBtn.className = "bg-red-700 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-red-800 transition text-white shadow-sm";
-
-                cartSidebar.classList.add('hidden');
-                custCard.classList.add('hidden');
-            } else {
-                panel.classList.add('hidden');
-                
-                adminBtn.innerText = "⚙️ Admin";
-                adminBtn.className = "bg-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-amber-900 transition text-white shadow-sm";
-
-                cartSidebar.classList.remove('hidden');
-                custCard.classList.remove('hidden');
-            }
         }
 
         window.renderAdminProducts = function() {
