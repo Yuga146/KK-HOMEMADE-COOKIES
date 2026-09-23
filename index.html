@@ -281,6 +281,12 @@
             { id: "4", name: "Cornflakes Madu", price: 22.00, stock: 20, image: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400" }
         ];
 
+        // 1. Helper function to generate a 4-digit Order ID (e.g. ORD-4821)
+        function generateOrderId() {
+            const random4Digit = Math.floor(1000 + Math.random() * 9000);
+            return `ORD-${random4Digit}`;
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const savedName = localStorage.getItem('cust_name');
             const savedPhone = localStorage.getItem('cust_phone');
@@ -608,258 +614,274 @@
                 list.innerHTML += `
                     <div class="product-card bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-between text-gray-800 relative">
                         <div>
-                            <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3 bg-gray-100 ${isSoldOut ? 'opacity-60 grayscale' : ''}" onerror="this.src='https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400'">
-                            <h3 class="font-bold text-lg text-gray-900">${p.name}</h3>
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-lg mb-3">
+                            <h3 class="font-bold text-base mb-1">${p.name}</h3>
+                            <p class="text-amber-700 font-bold text-sm">RM ${p.price.toFixed(2)}</p>
                             ${stockBadge}
                         </div>
-                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                            <span class="bg-amber-100 text-amber-900 px-3 py-1.5 rounded-lg font-bold text-sm">RM ${Number(p.price).toFixed(2)}</span>
-                            <div class="flex items-center bg-gray-100 rounded-lg p-1 border border-gray-200">
-                                <button onclick="updateCartQty('${p.id}', -1)" ${isSoldOut ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition disabled:opacity-30 disabled:cursor-not-allowed">-</button>
-                                <span id="product-qty-${p.id}" class="w-8 text-center text-sm font-bold text-gray-800">${cartQty}</span>
-                                <button onclick="updateCartQty('${p.id}', 1)" ${isSoldOut ? 'disabled' : ''} class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white rounded shadow-sm transition disabled:opacity-30 disabled:cursor-not-allowed">+</button>
+                        <div class="mt-4 flex items-center justify-between border-t pt-3">
+                            <span class="text-xs font-semibold text-gray-500">Qty in Cart: ${cartQty}</span>
+                            <div class="flex gap-1">
+                                <button onclick="addToCart('${p.id}', -1)" ${cartQty <= 0 ? 'disabled' : ''} class="bg-gray-200 text-gray-800 w-8 h-8 rounded-lg font-bold hover:bg-gray-300 disabled:opacity-40 transition">-</button>
+                                <button onclick="addToCart('${p.id}', 1)" ${isSoldOut || cartQty >= p.stock ? 'disabled' : ''} class="bg-amber-600 text-white w-8 h-8 rounded-lg font-bold hover:bg-amber-500 disabled:opacity-40 transition">+</button>
                             </div>
                         </div>
                     </div>
                 `;
             });
-        }
+        };
 
-        window.updateCartQty = function(productId, change) {
-            const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
+        window.addToCart = function(productId, delta) {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
 
-            if (!name || !phone) {
-                alert("Please enter your Name and Phone Number first!");
-                document.getElementById('cust-name').focus();
-                return;
-            }
-
-            const product = products.find(p => p.id === productId);
-
-            if (product.stock <= 0) {
-                alert("Sorry, this item is sold out!");
-                return;
-            }
-
-            let cartItem = cart.find(item => item.id === productId);
-            let currentQty = cartItem ? cartItem.qty : 0;
-            let newQty = currentQty + change;
-
-            if (newQty < 0) return;
-
-            if (newQty > product.stock) {
-                alert("Not enough stock available!");
-                return;
-            }
-
-            if (newQty === 0) {
-                cart = cart.filter(item => item.id !== productId);
-            } else {
-                if (cartItem) {
-                    cartItem.qty = newQty;
-                } else {
-                    cart.push({ ...product, qty: newQty });
+            let item = cart.find(c => c.id === productId);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    cart = cart.filter(c => c.id !== productId);
                 }
-            }
-
-            const qtySpan = document.getElementById(`product-qty-${productId}`);
-            if (qtySpan) {
-                qtySpan.innerText = newQty;
+            } else if (delta > 0) {
+                cart.push({ id: prod.id, name: prod.name, price: prod.price, qty: 1 });
             }
 
             renderCart();
-        }
+            renderProducts();
+        };
 
-        window.renderCart = function() {
-            const container = document.getElementById('cart-items');
-            const totalEl = document.getElementById('cart-total');
-            const countEl = document.getElementById('cart-count');
+        function renderCart() {
+            const cartList = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
 
             if (cart.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm">Your cart is empty.</p>';
-                totalEl.innerText = 'RM 0.00';
-                countEl.innerText = '0';
+                cartList.innerHTML = '<p class="text-gray-500 text-sm">Your cart is empty.</p>';
+                cartCount.innerText = '0';
+                cartTotal.innerText = 'RM 0.00';
                 return;
             }
 
             let total = 0;
-            let totalItems = 0;
-            container.innerHTML = '';
+            let totalCount = 0;
+            cartList.innerHTML = '';
 
             cart.forEach(item => {
                 const subtotal = item.price * item.qty;
                 total += subtotal;
-                totalItems += item.qty;
+                totalCount += item.qty;
 
-                container.innerHTML += `
+                cartList.innerHTML += `
                     <div class="py-2 flex justify-between items-center text-sm">
                         <div>
-                            <p class="font-bold text-gray-800">${item.name}</p>
-                            <p class="text-xs text-gray-500">RM ${Number(item.price).toFixed(2)} x ${item.qty}</p>
+                            <p class="font-bold">${item.name}</p>
+                            <p class="text-xs text-gray-500">RM ${item.price.toFixed(2)} x ${item.qty}</p>
                         </div>
-                        <span class="font-bold text-amber-900">RM ${subtotal.toFixed(2)}</span>
+                        <span class="font-bold text-amber-700">RM ${subtotal.toFixed(2)}</span>
                     </div>
                 `;
             });
 
-            totalEl.innerText = `RM ${total.toFixed(2)}`;
-            countEl.innerText = totalItems;
+            cartCount.innerText = totalCount;
+            cartTotal.innerText = `RM ${total.toFixed(2)}`;
         }
+
+        // 2. Updated Checkout Function with Order ID and Status: "Pending"
+        window.checkout = async function() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+
+            if (!name || !phone) {
+                alert("Please fill in your name and phone number in Step 1 first!");
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert("Your cart is empty! Add some cookies first.");
+                return;
+            }
+
+            const orderId = generateOrderId(); // Auto generate ORD-XXXX ID
+            const orderStatus = "Pending";     // Default Status
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            const orderData = {
+                orderId: orderId,
+                customerName: name,
+                customerPhone: phone,
+                items: cart,
+                totalAmount: total,
+                status: orderStatus,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                // Save Order into Firebase Firestore
+                await addDoc(collection(db, "orders"), orderData);
+
+                // Reduce inventory stock for ordered items
+                for (let item of cart) {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        const newStock = Math.max(0, product.stock - item.qty);
+                        await updateDoc(doc(db, "products", item.id), { stock: newStock });
+                    }
+                }
+
+                // Construct WhatsApp message with Order ID and Status
+                let waMessage = `*NEW ORDER - ${orderId}*\n`;
+                waMessage += `*Status:* ${orderStatus}\n`;
+                waMessage += `*Customer:* ${name}\n`;
+                waMessage += `*Phone:* ${phone}\n\n`;
+                waMessage += `*Items Ordered:*\n`;
+                
+                cart.forEach(item => {
+                    waMessage += `- ${item.name} (${item.qty}x) = RM ${(item.price * item.qty).toFixed(2)}\n`;
+                });
+                
+                waMessage += `\n*Total Amount:* RM ${total.toFixed(2)}`;
+
+                // Reset Cart
+                cart = [];
+                renderCart();
+                renderProducts();
+
+                // Open WhatsApp link
+                const storePhoneNumber = "601128013453"; // Replace with your WhatsApp phone number
+                const waUrl = `https://wa.me/${storePhoneNumber}?text=${encodeURIComponent(waMessage)}`;
+                window.open(waUrl, '_blank');
+
+            } catch (err) {
+                console.error("Error placing order:", err);
+                alert("Failed to submit order. Please try again.");
+            }
+        };
+
+        // 3. Admin Order Management Functions
+        window.renderAdminOrders = function() {
+            const container = document.getElementById('admin-order-list');
+            if (!container) return;
+
+            if (orders.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">No customer orders recorded yet.</p>';
+                return;
+            }
+
+            const sortOption = document.getElementById('order-sort-select').value;
+            const sortedOrders = [...orders].sort((a, b) => {
+                const dateA = new Date(a.timestamp || 0);
+                const dateB = new Date(b.timestamp || 0);
+                return sortOption === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            container.innerHTML = '';
+            sortedOrders.forEach(o => {
+                const formattedDate = o.timestamp ? new Date(o.timestamp).toLocaleString() : 'N/A';
+                const status = o.status || 'Pending';
+                
+                // Color codes for status badges
+                let statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-400';
+                if (status === 'Complete') statusColor = 'bg-green-100 text-green-800 border-green-400';
+                if (status === 'Cancelled') statusColor = 'bg-red-100 text-red-800 border-red-400';
+
+                let itemsSummary = o.items ? o.items.map(i => `${i.name} (x${i.qty})`).join(', ') : 'No items';
+
+                container.innerHTML += `
+                    <div class="admin-item-card bg-amber-50/60 p-4 rounded-xl border border-amber-200 flex flex-col gap-2">
+                        <div class="flex justify-between items-start border-b pb-2">
+                            <div>
+                                <span class="font-bold text-sm text-amber-900">${o.orderId || 'ORD-0000'}</span>
+                                <span class="text-xs text-gray-500 block">${formattedDate}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded border ${statusColor}">${status}</span>
+                                <select onchange="updateOrderStatus('${o.docId}', this.value)" class="text-xs border rounded p-1 bg-white font-semibold">
+                                    <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Complete" ${status === 'Complete' ? 'selected' : ''}>Complete</option>
+                                    <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-xs space-y-1">
+                            <p><strong>Customer:</strong> ${o.customerName} (${o.customerPhone})</p>
+                            <p><strong>Items:</strong> ${itemsSummary}</p>
+                            <p class="font-bold text-amber-800 text-sm mt-1">Total: RM ${(o.totalAmount || 0).toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        // Update Order Status in Firestore
+        window.updateOrderStatus = async function(docId, newStatus) {
+            try {
+                await updateDoc(doc(db, "orders", docId), { status: newStatus });
+            } catch (err) {
+                console.error("Error updating status:", err);
+                alert("Failed to update order status.");
+            }
+        };
 
         window.renderAdminProducts = function() {
-            const adminList = document.getElementById('admin-product-list');
-            adminList.innerHTML = '';
+            const container = document.getElementById('admin-product-list');
+            if (!container) return;
+
+            container.innerHTML = '';
             products.forEach(p => {
-                adminList.innerHTML += `
-                    <div class="admin-item-card bg-white p-3 rounded-lg shadow-sm border flex flex-col gap-2 text-sm text-gray-800">
-                        <div class="flex gap-2 items-center">
-                            <input type="text" value="${p.name}" id="name-${p.id}" class="border p-1 rounded w-1/3">
-                            <input type="number" value="${p.price}" id="price-${p.id}" class="border p-1 rounded w-20">
-                            <input type="number" value="${p.stock}" id="stock-${p.id}" class="border p-1 rounded w-20">
+                container.innerHTML += `
+                    <div class="admin-item-card bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between gap-3">
+                        <img src="${p.image}" alt="${p.name}" class="w-12 h-12 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm">${p.name}</h4>
+                            <p class="text-xs text-gray-500">RM ${p.price.toFixed(2)} | Stock: ${p.stock}</p>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-2 items-center justify-between">
-                            <div class="flex items-center gap-2 w-full">
-                                <span class="text-xs text-gray-500">Photo:</span>
-                                <input type="file" id="file-${p.id}" accept="image/png, image/jpeg" class="text-xs w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800">
-                            </div>
-                            <div class="flex gap-2 w-full sm:w-auto justify-end">
-                                <button onclick="saveProduct('${p.id}')" class="bg-amber-700 text-white px-3 py-1 rounded text-xs font-bold hover:bg-amber-600">Save</button>
-                                <button onclick="deleteProduct('${p.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-red-500">Delete</button>
-                            </div>
+                        <div class="flex gap-2">
+                            <button onclick="editProductStock('${p.id}')" class="bg-amber-600 text-white px-2.5 py-1 rounded text-xs font-bold hover:bg-amber-500">Edit</button>
+                            <button onclick="deleteProduct('${p.id}')" class="bg-red-600 text-white px-2.5 py-1 rounded text-xs font-bold hover:bg-red-500">Delete</button>
                         </div>
                     </div>
                 `;
             });
-        }
-
-        window.saveProduct = async function(id) {
-            const name = document.getElementById(`name-${id}`).value;
-            const price = parseFloat(document.getElementById(`price-${id}`).value);
-            const stock = parseInt(document.getElementById(`stock-${id}`).value);
-            const fileInput = document.getElementById(`file-${id}`);
-
-            let image = products.find(p => p.id === id).image;
-
-            if (fileInput.files && fileInput.files[0]) {
-                try {
-                    image = await compressImage(fileInput.files[0]);
-                } catch (e) {
-                    alert("Image failed to process.");
-                    return;
-                }
-            }
-
-            await updateDoc(doc(db, "products", id), { name, price, stock, image });
-            alert("Product updated!");
-        }
-
-        window.deleteProduct = async function(id) {
-            if (confirm("Delete this product?")) {
-                await deleteDoc(doc(db, "products", id));
-            }
-        }
+        };
 
         window.addNewProductPrompt = async function() {
             const name = prompt("Enter Cookie Name:");
             if (!name) return;
             const price = parseFloat(prompt("Enter Price (RM):", "25.00"));
             if (isNaN(price)) return;
-            const stock = parseInt(prompt("Enter Initial Stock Quantity:", "10"));
+            const stock = parseInt(prompt("Enter Stock Quantity:", "20"));
             if (isNaN(stock)) return;
+            const image = prompt("Enter Image URL:", "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400");
 
             const newDocRef = doc(collection(db, "products"));
             await setDoc(newDocRef, {
+                id: newDocRef.id,
                 name,
                 price,
                 stock,
-                image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400"
+                image: image || "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400"
             });
-        }
+        };
 
-        window.renderAdminOrders = function() {
-            const container = document.getElementById('admin-order-list');
-            const sortOrder = document.getElementById('order-sort-select').value;
-            
-            if (orders.length === 0) {
-                container.innerHTML = '<p class="text-xs text-gray-500">No customer orders recorded yet.</p>';
-                return;
+        window.editProductStock = async function(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+
+            const newStock = prompt(`Update stock quantity for ${prod.name}:`, prod.stock);
+            if (newStock !== null && !isNaN(parseInt(newStock))) {
+                await updateDoc(doc(db, "products", id), { stock: parseInt(newStock) });
             }
+        };
 
-            let sorted = [...orders].sort((a, b) => {
-                const dateA = new Date(a.timestamp || 0);
-                const dateB = new Date(b.timestamp || 0);
-                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-            });
-
-            container.innerHTML = '';
-            sorted.forEach(order => {
-                const itemsList = (order.items || []).map(i => `${i.name} (x${i.qty})`).join(', ');
-                container.innerHTML += `
-                    <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-200 text-xs flex flex-col gap-1">
-                        <div class="flex justify-between items-center font-bold text-amber-900">
-                            <span>👤 ${order.customerName || 'Anonymous'} (${order.phone || 'N/A'})</span>
-                            <span>RM ${Number(order.total || 0).toFixed(2)}</span>
-                        </div>
-                        <div class="text-gray-700">🛒 ${itemsList}</div>
-                        <div class="text-[10px] text-gray-400 mt-1">${order.timestamp ? new Date(order.timestamp).toLocaleString() : ''}</div>
-                    </div>
-                `;
-            });
-        }
-
-        window.checkout = async function() {
-            const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
-
-            if (!name || !phone) {
-                alert("Please fill in your Name and Phone Number first!");
-                return;
+        window.deleteProduct = async function(id) {
+            if (confirm("Are you sure you want to delete this cookie product?")) {
+                await deleteDoc(doc(db, "products", id));
             }
+        };
 
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
-
-            let total = 0;
-            let orderSummary = `*New Order - Deepavali Cookie Store*\n`;
-            orderSummary += `👤 Name: ${name}\n📱 Phone: ${phone}\n------------------------------\n`;
-
-            cart.forEach(item => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                orderSummary += `• ${item.name} x ${item.qty} = RM ${subtotal.toFixed(2)}\n`;
-            });
-
-            orderSummary += `------------------------------\n💰 *Total Amount: RM ${total.toFixed(2)}*`;
-
-            try {
-                await addDoc(collection(db, "orders"), {
-                    customerName: name,
-                    phone: phone,
-                    items: cart,
-                    total: total,
-                    timestamp: new Date().toISOString()
-                });
-
-                for (let cartItem of cart) {
-                    const prod = products.find(p => p.id === cartItem.id);
-                    if (prod) {
-                        const newStock = Math.max(0, prod.stock - cartItem.qty);
-                        await updateDoc(doc(db, "products", cartItem.id), { stock: newStock });
-                    }
-                }
-
-                cart = [];
-                renderCart();
-
-                const encodedMsg = encodeURIComponent(orderSummary);
-                window.open(`https://wa.me/601128013453?text=${encodedMsg}`, '_blank');
-            } catch (err) {
-                alert("An error occurred while submitting your order. Please try again.");
-            }
-        }
+        window.toggleCart = function() {
+            const sidebar = document.getElementById('cart-sidebar');
+            sidebar.classList.toggle('hidden');
+        };
     </script>
 </body>
 </html>
